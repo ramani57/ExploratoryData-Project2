@@ -1,0 +1,22 @@
+library(dplyr)
+library(ggplot2)
+NEI <- readRDS("C:/Users/538321/Documents/DataManagement/ExploratoryDataAnalysis/exdata_data_NEI_data/summarySCC_PM25.rds")
+SRC <- readRDS("C:/Users/538321/Documents/DataManagement/ExploratoryDataAnalysis/exdata_data_NEI_data/Source_Classification_Code.rds")
+#CC <- grep("coal",SRC$EI.Sector,value=T,ignore.case=T)
+coalcumbustion <-  filter(SRC, SRC$EI.Sector== "Fuel Comb - Electric Generation - Coal")
+subsetSCC_CC <- subset(SRC, SRC$EI.Sector== "Fuel Comb - Electric Generation - Coal", select = SCC)
+subdata_year_county <- filter(NEI,(year == 1999 | year == 2002 | year == 2005 | year == 2008| fips == "24510") )
+subsetSCC_NEC <- subset(NEI,  subsetSCC_CC$SCC %in% subdata_year_county$SCC )
+head(subsetSCC_NEC)
+subdata <-subset(subsetSCC_NEC, select = c(Emissions, year))
+head(subdata)
+aggregatevalue <- aggregate(subdata$Emissions, list(year = subdata$year), sum)
+head( aggregatevalue)
+colnames(aggregatevalue)[2] = "Emissions"
+png("C:/Users/538321/Documents/DataManagement/ExploratoryDataAnalysis/exdata_data_NEI_data/plot4_1.png",width=480,height=480,units="px",bg="transparent")
+Cumbustiongraph <-  ggplot(aggregatevalue,aes(x= year, y= Emissions)) +geom_point(alpha= .3)+
+  geom_smooth(apha= .2, size = 1)+
+  ggtitle("Emissions From Coal Cumbustion")
+print(Cumbustiongraph)
+dev.off()
+rm(list = ls())
